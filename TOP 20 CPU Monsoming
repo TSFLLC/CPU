@@ -1,0 +1,24 @@
+SELECT TOP 20 SUBSTRING(eqt.TEXT, (eqs.statement_start_offset / 2) + 1, (
+(
+CASE eqs.statement_end_offset
+WHEN - 1
+THEN DATALENGTH(eqt.TEXT)
+ELSE eqs.statement_end_offset
+END - eqs.statement_start_offset
+) / 2
+) + 1) Statement
+,eqs.execution_count Total_number_of_execution
+,eqs.total_worker_time
+,eqs.last_worker_time
+,eqs.total_elapsed_time / 1000000 Total_Duration_In_Sec
+,eqs.last_elapsed_time / 1000000 Last_Duration_In_Sec
+,eqs.last_execution_time
+,eqs.total_logical_reads
+,eqs.last_logical_reads
+,eqs.total_logical_writes
+,eqs.last_logical_writes
+,eqp.query_plan
+FROM sys.dm_exec_query_stats eqs
+CROSS APPLY sys.dm_exec_query_plan(eqs.plan_handle) eqp
+CROSS APPLY sys.dm_exec_sql_text(eqs.sql_handle) eqt
+ORDER BY eqs.total_worker_time DESC
